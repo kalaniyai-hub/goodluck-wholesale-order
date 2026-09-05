@@ -154,7 +154,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     <label>પાસવર્ડ</label>
     <input id="saAgencyKey" type="text" placeholder="દા.ત. 123456">
     <label>મહત્તમ ડિવાઇસ લિમિટ</label>
-    <input id="saMaxDevices" type="number" value="2">
+    <input id="saMaxDevices" type="number" value="5">
     
     <label>વેલિડિટી દિવસો (આંકડો લખીને નીચે પ્લસ કે માઇનસ બટન દબાવો)</label>
     <input id="saAgencyDays" type="number" value="30">
@@ -384,9 +384,18 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     }
   }
 
-  window.agencies = JSON.parse(localStorage.getItem("saas_agencies")) || [
-    { name: "GOOD LUCK WHOLESALE", mobile: "7878515174", clientId: "goodluck", key: "GOODLUCK2026", maxDevices: 2, activeDevices: [], expiryDate: new Date(Date.now() + 30*24*60*60*1000).toISOString() }
-  ];
+  // Safe and smart agency loader (Ensures created agencies like SMB are never overwritten)
+  let savedAgenciesJson = localStorage.getItem("saas_agencies");
+  if(!savedAgenciesJson){
+    let initialAgencies = [
+      { name: "GOOD LUCK WHOLESALE", mobile: "7878515174", clientId: "goodluck", key: "GOODLUCK2026", maxDevices: 5, activeDevices: [], expiryDate: new Date(Date.now() + 30*24*60*60*1000).toISOString() },
+      { name: "SMB", mobile: "9033724852", clientId: "smb", key: "smb123", maxDevices: 5, activeDevices: [], expiryDate: new Date(Date.now() + 2*24*60*60*1000).toISOString() }
+    ];
+    localStorage.setItem("saas_agencies", JSON.stringify(initialAgencies));
+    window.agencies = initialAgencies;
+  } else {
+    window.agencies = JSON.parse(savedAgenciesJson);
+  }
 
   window.activeAgencyKey = null;
   window.currentAgencyData = null;
@@ -446,7 +455,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     document.getElementById("saAgencyMobile").value = "";
     document.getElementById("saAgencyId").value = "";
     document.getElementById("saAgencyKey").value = "";
-    document.getElementById("saMaxDevices").value = "2";
+    document.getElementById("saMaxDevices").value = "5";
     document.getElementById("saAgencyDays").value = "30";
     document.getElementById("saveAgencyBtn").innerText = "💾 એજન્સી સેવ / અપડેટ કરો";
     document.getElementById("cancelEditAgencyBtn").classList.add("hidden");
@@ -491,7 +500,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let mobile = document.getElementById("saAgencyMobile").value.trim();
     let clientId = document.getElementById("saAgencyId").value.trim().toLowerCase();
     let key = document.getElementById("saAgencyKey").value.trim();
-    let maxDev = parseInt(document.getElementById("saMaxDevices").value) || 2;
+    let maxDev = parseInt(document.getElementById("saMaxDevices").value) || 5;
     let days = parseInt(document.getElementById("saAgencyDays").value) || 30;
 
     if(!name || !mobile || !clientId || !key){ alert("બધી માહિતી ભરો."); return; }
@@ -530,7 +539,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     document.getElementById("saAgencyMobile").value = ag.mobile;
     document.getElementById("saAgencyId").value = ag.clientId || "";
     document.getElementById("saAgencyKey").value = ag.key;
-    document.getElementById("saMaxDevices").value = ag.maxDevices || 2;
+    document.getElementById("saMaxDevices").value = ag.maxDevices || 5;
     document.getElementById("saAgencyDays").value = "30";
     document.getElementById("saveAgencyBtn").innerText = "💾 એજન્સી અપડેટ કરો";
     document.getElementById("cancelEditAgencyBtn").classList.remove("hidden");
@@ -734,10 +743,18 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.lang = 'gu-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
     recognition.start();
     recognition.onresult = function(event){
       let el = document.getElementById(fieldId);
-      if(el) el.value = event.results[0][0].transcript;
+      if(el) {
+        el.value = event.results[0][0].transcript;
+        if(fieldId === 'shopMobile') window.checkCustomerByMobile();
+      }
+    };
+    recognition.onerror = function(event){
+      console.error("Speech recognition error", event.error);
     };
   }
 
@@ -798,6 +815,8 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     document.getElementById("prodImageBase64").value = "";
     document.getElementById("prodImagePreview").src = "";
     document.getElementById("imagePreviewContainer").style.display = "none";
+    document.getElementById("prodCameraInput").value = "";
+    document.getElementById("prodGalleryInput").value = "";
   }
 
   window.saveProduct = async function(){
@@ -1224,7 +1243,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let dt = getFormattedDateTime(new Date());
     if(currentRem > 0){
       if(!rec.paymentsHistory) rec.paymentsHistory = [];
-      rec.paymentsHistory.push({ amount: currentRem.toFixed(2), date: dt.date, time: dt.time });
+      rec.paymentsHistory.push({ amount: currentRem.toFixed(2), date: dt.date, day: dt.day, time: dt.time });
     }
     let paidTotal = currentRem;
     rec.remainingBalance = 0;
