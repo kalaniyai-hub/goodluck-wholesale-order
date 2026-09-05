@@ -170,7 +170,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     </div>
     <button class="btn btn-secondary" type="button" style="width:100%; margin-top:5px; background:#6c757d;" onclick="closeSuperAdmin()">🔒 બંધ કરો</button>
     
-    <h4 style="margin-top:12px; font-size:13px; color:#333;">બધી એજન્સીઓની યાદી:</h4>
+    <h4 style="margin-top:12px; font-size:13px; color:#333;">🔍 એજન્સી શોધો (નામ અથવા નંબર):</h4>
+    <input id="saSearchInput" placeholder="એજન્સીનું નામ કે નંબર લખો..." lang="gu" oninput="loadAgencyListInAdmin()" style="margin-bottom:6px;">
+
+    <h4 style="margin-top:8px; font-size:13px; color:#333;">બધી એજન્સીઓની યાદી:</h4>
     <div id="agencyListContainer" style="margin-top:5px; font-size:12px; background:#fff; padding:6px; border-radius:5px; max-height:200px; overflow-y:auto;"></div>
   </div>
 </div>
@@ -537,7 +540,17 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let container = document.getElementById("agencyListContainer");
     if(!container) return;
     container.innerHTML = "";
-    window.agencies.forEach((ag, idx) => {
+    
+    let searchVal = (document.getElementById("saSearchInput")?.value || "").toLowerCase().trim();
+    let filteredAgencies = window.agencies;
+    if(searchVal){
+      filteredAgencies = window.agencies.filter(a => a.name.toLowerCase().includes(searchVal) || a.mobile.includes(searchVal) || a.clientId.toLowerCase().includes(searchVal));
+    }
+
+    if(filteredAgencies.length === 0){ container.innerHTML = "કોઈ એજન્સી મળી નથી."; return; }
+
+    filteredAgencies.forEach((ag, idx) => {
+      let realIdx = window.agencies.findIndex(x => x.clientId === ag.clientId);
       let expObj = getFormattedDateTime(ag.expiryDate);
       let diffMs = new Date(ag.expiryDate).getTime() - new Date().getTime();
       let diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
@@ -548,8 +561,8 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
           🆔 ID: <code>${ag.clientId}</code> | 🔑 પાસવર્ડ: <code>${ag.key}</code><br>
           ⏳ એક્સપાયરી: ${expObj.date} (<span style="color:#d9534f; font-weight:bold;">${timeLeftStr}</span>)
           <div style="margin-top:6px; display:flex; gap:4px;">
-            <button class="btn btn-primary" type="button" style="padding:3px 8px; font-size:11px;" onclick="editAgency(${idx})">Edit</button>
-            <button class="btn btn-danger" type="button" style="padding:3px 8px; font-size:11px;" onclick="deleteAgency(${idx})">Delete</button>
+            <button class="btn btn-primary" type="button" style="padding:3px 8px; font-size:11px;" onclick="editAgency(${realIdx})">Edit</button>
+            <button class="btn btn-danger" type="button" style="padding:3px 8px; font-size:11px;" onclick="deleteAgency(${realIdx})">Delete</button>
           </div>
         </div>`;
     });
@@ -641,7 +654,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let phoneHeader = document.getElementById("agencyPhoneHeader");
     if(phoneHeader) phoneHeader.innerText = "📞 " + window.settings.whatsapp;
     
-    // Robust URL handling for public live hosting (Netlify/Firebase hosting) vs localhost
     let currentUrl = window.location.href.split('?')[0];
     let shareLink = currentUrl + "?agency=" + storeKey;
     let shareInput = document.getElementById("customerShareLink");
@@ -727,6 +739,19 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let el = document.getElementById(fieldId);
       if(el) el.value = event.results[0][0].transcript;
     };
+  }
+
+  window.checkCustomerByMobile = function(){
+    let mobile = document.getElementById("shopMobile").value.trim();
+    if(mobile.length === 10){
+      let foundRec = window.ledger.slice().reverse().find(x => x.mobile === mobile && !x.deleted);
+      if(foundRec){
+        let sNameEl = document.getElementById("shopName");
+        let sAddrEl = document.getElementById("shopAddress");
+        if(sNameEl && !sNameEl.value) sNameEl.value = foundRec.shopName || "";
+        if(sAddrEl && !sAddrEl.value) sAddrEl.value = foundRec.address || "";
+      }
+    }
   }
 
   window.addPackingRow = function(name="", price="", pcs=""){
@@ -999,7 +1024,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     window.ledger.push(rec);
     await window.saveLedgerToFirebase(rec);
 
-    let message = `🛒 *${window.settings.name}*\n\n📄 *બિલ નંબર:* ${billNo}\n📅 *તારીખ:* ${dt.date} (${dt.day})\n🏪 *દુકાન:* ${shopName}\n📞 *નંબર:* ${mobile}\n\n📦 *વિગત:*\n${orderText}\n💰 *ફાઇનલ બિલ: ₹${grandTotal.toFixed(2)}*\n\nકૃપા કરીને ઓર્ડર કન્ફર્મ કરો.`;
+    let message = `🛒 *${window.settings.name}*\n\n📄 *બિલ નંબર:* ${billNo}\n📅 *તારીખ:* ${dt.date} (${dt.day}), સમય: ${dt.time}\n🏪 *દુકાન:* ${shopName}\n📞 *નંબર:* ${mobile}\n\n📦 *વિગત:*\n${orderText}\n💰 *ફાઇનલ બિલ: ₹${grandTotal.toFixed(2)}*\n\nકૃપા કરીને ઓર્ડર કન્ફર્મ કરો.`;
     window.open(`https://wa.me/91${window.settings.whatsapp}?text=` + encodeURIComponent(message), "_blank");
     alert("✅ બિલ સાથે ઓર્ડર સેવ થઈ ગયો છે અને WhatsApp પર મોકલવામાં આવી રહ્યો છે.");
     window.loadCustomerDirectory();
@@ -1044,7 +1069,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     if(totalDisplayEl) totalDisplayEl.innerText = totalOutstandingSum.toFixed(2);
 
     let list = window.ledger.filter(x=>{
-      let matchSearch = !search || x.shopName.toLowerCase().includes(search) || x.mobile.includes(search);
+      let matchSearch = !search || (x.shopName && x.shopName.toLowerCase().includes(search)) || (x.mobile && x.mobile.includes(search));
       let matchDate = true;
       if(x.dateObject && (startDate || endDate)){
         let itemDate = x.dateObject.split("T")[0];
@@ -1083,15 +1108,24 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       if(record.paymentsHistory && record.paymentsHistory.length > 0){
         historyHtml = `<div style="margin-top:4px; font-size:11px; color:#198754; background:#e8f5e9; padding:4px; border-radius:4px;">`;
         record.paymentsHistory.forEach(ph => {
-          historyHtml += `▪️ જમા રકમ: ₹${ph.amount} (તારીખ: ${ph.date})<br>`;
+          let phDayStr = ph.day ? `(${ph.day})` : '';
+          let phTimeStr = ph.time ? `, સમય: ${ph.time}` : '';
+          historyHtml += `▪️ જમા રકમ: ₹${ph.amount} (તારીખ: ${ph.date} ${phDayStr}${phTimeStr})<br>`;
         });
         historyHtml += `</div>`;
       }
 
+      let deliveryHtml = "";
+      if(record.delivered){
+        deliveryHtml = `<div style="color:#d9534f; margin-top:2px;">🚚 ડિલિવરી તારીખ: ${record.delDate || record.date} (${record.delDay || record.day}), સમય: ${record.delTime || record.time}</div>`;
+      }
+
       box.innerHTML += `
         <div class="ledger-item">
-          <b>📄 બિલ નં: ${record.billNo} | 🏪 ${record.shopName}</b> (${record.mobile})<br>
-          📅 ઓર્ડર તારીખ: ${record.date} | 💰 કુલ: ₹${record.grandTotal} | 🔴 બાકી: <b style="color:red;">₹${currentRem.toFixed(2)}</b>
+          <b>📄 બિલ નં: ${record.billNo} | 🏪 ${record.shopName || 'અનામત'} (${record.mobile || 'નથી'})</b><br>
+          📅 ઓર્ડર તારીખ: ${record.date} (${record.day}), સમય: ${record.time}<br>
+          ${deliveryHtml}
+          💰 કુલ બિલ: ₹${record.grandTotal} | 🔴 બાકી: <b style="color:red;">₹${currentRem.toFixed(2)}</b>
           ${historyHtml}
           <div style="margin-top:5px;font-size:12px;color:#555">📦 ${record.items}</div>
           <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${buttons}</div>
@@ -1102,14 +1136,30 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
   window.sendCustomerMultiBillReminder = function(mobile){
     let custBills = window.ledger.filter(x => x.mobile === mobile && !x.deleted && parseFloat(x.remainingBalance !== undefined ? x.remainingBalance : x.grandTotal) > 0);
     if(custBills.length === 0){ alert("કોઈ બાકી બિલ નથી."); return; }
-    let statementText = `નમસ્કાર 🙏 *${custBills[0].shopName}*:\n\nઆપના તરફથી અમારી એજન્સી *${window.settings.name}* માં નીચે મુજબના બિલ બાકી બોલે છે:\n\n`;
+    
+    let statementText = `નમસ્કાર 🙏 *${custBills[0].shopName}*:\n\nઆપના તરફથી અમારી એજન્સી *${window.settings.name}* (${window.settings.whatsapp}) માં નીચે મુજબના બિલ બાકી બોલે છે:\n\n`;
     let total = 0;
+    
     custBills.forEach((b, idx) => {
       let rem = parseFloat(b.remainingBalance !== undefined ? b.remainingBalance : b.grandTotal);
       total += rem;
-      statementText += `*(બિલ ${idx + 1})* 📄 બિલ નં: ${b.billNo}\n💰 બાકી: ₹${rem.toFixed(2)}\n------------------------\n`;
+      
+      let deliveryStatusText = b.delivered ? `🚚 ડિલિવરી તારીખ: ${b.delDate || b.date} (${b.delDay || b.day}), સમય: ${b.delTime || b.time}` : `🚚 ડિલિવરી: બાકી છે`;
+      
+      let historyText = "";
+      if(b.paymentsHistory && b.paymentsHistory.length > 0){
+        historyText = `\n📥 જમા ઇતિહાસ:\n`;
+        b.paymentsHistory.forEach(ph => {
+          let phDay = ph.day ? `(${ph.day})` : '';
+          let phTime = ph.time ? `, સમય: ${ph.time}` : '';
+          historyText += `  - ₹${ph.amount} (તારીખ: ${ph.date} ${phDay}${phTime})\n`;
+        });
+      }
+
+      statementText += `*(બિલ ${idx + 1})* 📄 બિલ નં: ${b.billNo}\n📅 ઓર્ડર તારીખ: ${b.date} (${b.day}), સમય: ${b.time}\n${deliveryStatusText}\n\n📦 વિગત:\n${b.items}${historyText}💰 કુલ બિલ: ₹${b.grandTotal} | 🔴 બાકી: ₹${rem.toFixed(2)}\n------------------------\n`;
     });
-    statementText += `\n🔴 *કુલ બાકી: ₹${total.toFixed(2)}*\n\nકૃપા કરીને રકમ ચૂકવવા વિનંતી છે.\n\n*${window.settings.name}*`;
+
+    statementText += `\n🔴 *કુલ બાકી રકમ: ₹${total.toFixed(2)}*\n\nકૃપા કરીને રકમ ચૂકવવા વિનંતી છે.\n\n*${window.settings.name}*`;
     window.open(`https://wa.me/91${mobile}?text=` + encodeURIComponent(statementText), "_blank");
   }
 
@@ -1131,6 +1181,9 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     rec.delDate = dt.date; rec.delDay = dt.day; rec.delTime = dt.time;
     await window.saveLedgerToFirebase(rec);
     window.loadLedger();
+
+    let msg = `નમસ્કાર 🙏 *${rec.shopName}*,\n\nતમારો ઓર્ડર (બિલ નં: *${rec.billNo}*) સફળતાપૂર્વક ડિલિવર થઈ ગયો છે.\n\n📅 ઓર્ડર તારીખ: ${rec.date} (${rec.day}), સમય: ${rec.time}\n🚚 ડિલિવરી તારીખ: ${dt.date} (${dt.day}), સમય: ${dt.time}\n\n📦 ઓર્ડર વિગત:\n${rec.items}💰 કુલ બિલ: ₹${rec.grandTotal} | 🔴 બાકી: ₹${parseFloat(rec.remainingBalance !== undefined ? rec.remainingBalance : rec.grandTotal).toFixed(2)}\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${rec.mobile}?text=` + encodeURIComponent(msg), "_blank");
   }
 
   window.addPartialPayment = async function(recId){
@@ -1146,13 +1199,21 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     rec.remainingBalance = currentRem;
     let dt = getFormattedDateTime(new Date());
     if(!rec.paymentsHistory) rec.paymentsHistory = [];
-    rec.paymentsHistory.push({ amount: payAmount.toFixed(2), date: dt.date });
+    rec.paymentsHistory.push({ amount: payAmount.toFixed(2), date: dt.date, day: dt.day, time: dt.time });
     if(currentRem <= 0) rec.paymentType = "રોકડા (જમા - પૂર્ણ)";
 
     await window.saveLedgerToFirebase(rec);
     window.loadLedger();
     window.loadCustomerDirectory();
-    alert("✅ રકમ સફળતાપૂર્વક જમા થઈ ગઈ!");
+
+    let historyText = "";
+    rec.paymentsHistory.forEach(ph => {
+      historyText += `  - ₹${ph.amount} (તારીખ: ${ph.date} (${ph.day}), સમય: ${ph.time})\n`;
+    });
+
+    let msg = `નમસ્કાર 🙏 *${rec.shopName}*,\n\nતમારા બિલ નં: *${rec.billNo}* માં ₹${payAmount.toFixed(2)} જમા થઈ ગયા છે.\n📅 ઓર્ડર તારીખ: ${rec.date} (${rec.day}), સમય: ${rec.time}\n\n📦 ઓર્ડર વિગત:\n${rec.items}\n📥 જમા ઇતિહાસ:\n${historyText}💰 કુલ બિલ: ₹${rec.grandTotal} | 🔴 બાકી રકમ: ₹${currentRem.toFixed(2)}\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${rec.mobile}?text=` + encodeURIComponent(msg), "_blank");
+    alert("✅ રકમ સફળતાપૂર્વક જમા થઈ ગઈ અને WhatsApp મેસેજ મોકલવામાં આવ્યો!");
   }
 
   window.markPaidCompletely = async function(recId){
@@ -1163,14 +1224,23 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let dt = getFormattedDateTime(new Date());
     if(currentRem > 0){
       if(!rec.paymentsHistory) rec.paymentsHistory = [];
-      rec.paymentsHistory.push({ amount: currentRem.toFixed(2), date: dt.date });
+      rec.paymentsHistory.push({ amount: currentRem.toFixed(2), date: dt.date, time: dt.time });
     }
+    let paidTotal = currentRem;
     rec.remainingBalance = 0;
     rec.paymentType = "રોકડા (જમા - પૂર્ણ)";
     await window.saveLedgerToFirebase(rec);
     window.loadLedger();
     window.loadCustomerDirectory();
-    alert("✅ બિલ સંપૂર્ણપણે જમા થઈ ગયું!");
+
+    let historyText = "";
+    rec.paymentsHistory.forEach(ph => {
+      historyText += `  - ₹${ph.amount} (તારીખ: ${ph.date} (${ph.day}), સમય: ${ph.time})\n`;
+    });
+
+    let msg = `નમસ્કાર 🙏 *${rec.shopName}*,\n\nતમારું બિલ નં: *${rec.billNo}* ની સંપૂર્ણ બાકી રકમ જમા (Paid) થઈ ગઈ છે.\n📅 ઓર્ડર તારીખ: ${rec.date} (${rec.day}), સમય: ${rec.time}\n\n📦 ઓર્ડર વિગત:\n${rec.items}\n📥 જમા ઇતિહાસ:\n${historyText}💰 કુલ બિલ: ₹${rec.grandTotal} | 🟢 બાકી: ₹0.00 (બિલ ક્લિયર)\n\nઆપનો ખૂબ ખૂબ આભાર!\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${rec.mobile}?text=` + encodeURIComponent(msg), "_blank");
+    alert("✅ બિલ સંપૂર્ણપણે જમા થઈ ગયું અને WhatsApp મેસેજ મોકલવામાં આવ્યો!");
   }
 
   window.deleteLedger = async function(recId){
