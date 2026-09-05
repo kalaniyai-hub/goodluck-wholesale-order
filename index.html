@@ -384,25 +384,42 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     }
   }
 
-  // Safe and smart agency loader (Ensures created agencies like SMB are never overwritten)
-  let savedAgenciesJson = localStorage.getItem("saas_agencies");
-  if(!savedAgenciesJson){
-    let initialAgencies = [
-      { name: "GOOD LUCK WHOLESALE", mobile: "7878515174", clientId: "goodluck", key: "GOODLUCK2026", maxDevices: 5, activeDevices: [], expiryDate: new Date(Date.now() + 30*24*60*60*1000).toISOString() },
-      { name: "SMB", mobile: "9033724852", clientId: "smb", key: "smb123", maxDevices: 5, activeDevices: [], expiryDate: new Date(Date.now() + 2*24*60*60*1000).toISOString() }
-    ];
-    localStorage.setItem("saas_agencies", JSON.stringify(initialAgencies));
-    window.agencies = initialAgencies;
-  } else {
-    window.agencies = JSON.parse(savedAgenciesJson);
-  }
-
+  // 100% Firebase Cloud Powered Agencies Management System
+  window.agencies = [];
   window.activeAgencyKey = null;
   window.currentAgencyData = null;
   window.products = [];
   window.ledger = [];
   window.latitude = ""; window.windowLng = ""; window.ledgerTab = "baki";
   window.settings = { name: "GOOD LUCK WHOLESALE ORDER", whatsapp: "7878515174" };
+
+  window.loadAllAgenciesFromCloud = async function() {
+    try {
+      const snap = await getDocs(collection(window.db, "global_system_agencies"));
+      window.agencies = [];
+      snap.forEach(docSnap => {
+        window.agencies.push(docSnap.data());
+      });
+
+      // If cloud is totally empty, initialize default master agencies
+      if(window.agencies.length === 0){
+        let defaultList = [
+          { name: "GOOD LUCK WHOLESALE", mobile: "7878515174", clientId: "goodluck", key: "GOODLUCK2026", maxDevices: 5, expiryDate: new Date(Date.now() + 30*24*60*60*1000).toISOString() },
+          { name: "SMB", mobile: "9033724852", clientId: "smb", key: "smb123", maxDevices: 5, expiryDate: new Date(Date.now() + 2*24*60*60*1000).toISOString() }
+        ];
+        for(let ag of defaultList){
+          await setDoc(doc(window.db, "global_system_agencies", ag.clientId), ag);
+          window.agencies.push(ag);
+        }
+      }
+    } catch(e) {
+      console.error("Cloud agencies fetch error:", e);
+      window.agencies = [
+        { name: "GOOD LUCK WHOLESALE", mobile: "7878515174", clientId: "goodluck", key: "GOODLUCK2026", maxDevices: 5, expiryDate: new Date(Date.now() + 30*24*60*60*1000).toISOString() },
+        { name: "SMB", mobile: "9033724852", clientId: "smb", key: "smb123", maxDevices: 5, expiryDate: new Date(Date.now() + 2*24*60*60*1000).toISOString() }
+      ];
+    }
+  }
 
   let secretClickCount = 0;
   window.handleSecretClicks = function(){
@@ -423,13 +440,14 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     if(modal) modal.classList.add("hidden");
   }
 
-  window.verifyMasterPin = function(){
+  window.verifyMasterPin = async function(){
     let pinInput = document.getElementById("masterPinInput");
     let pin = pinInput ? pinInput.value.trim() : "";
     if(pin === "admin123@8818"){
       window.closeMasterModal();
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("superAdminModal").classList.remove("hidden");
+      await window.loadAllAgenciesFromCloud();
       window.loadAgencyListInAdmin();
     } else {
       alert("❌ ખોટો માસ્ટર પાસવર્ડ!");
@@ -486,7 +504,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let expiryISO = expiryDateObj.toISOString();
     if(editIdx !== -1){
       window.agencies[editIdx].expiryDate = expiryISO;
-      localStorage.setItem("saas_agencies", JSON.stringify(window.agencies));
       window.loadAgencyListInAdmin();
     } else {
       window._tempCalculatedExpiry = expiryISO;
@@ -494,7 +511,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     }
   }
 
-  window.saveAgencyData = function(){
+  window.saveAgencyData = async function(){
     let editIdx = parseInt(document.getElementById("editAgencyIndex").value);
     let name = document.getElementById("saAgencyName").value.trim();
     let mobile = document.getElementById("saAgencyMobile").value.trim();
@@ -517,17 +534,19 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       expiryISO = dObj.toISOString();
     }
 
+    let agObj = { name: name, mobile: mobile, clientId: clientId, key: key, maxDevices: maxDev, expiryDate: expiryISO };
+
+    // Save directly to Firebase Cloud
+    await setDoc(doc(window.db, "global_system_agencies", clientId), agObj);
+
     if(editIdx === -1){
-      window.agencies.push({ name: name, mobile: mobile, clientId: clientId, key: key, maxDevices: maxDev, activeDevices: [], expiryDate: expiryISO });
-      alert(`✅ નવી એજન્સી (${name}) સફળતાપૂર્વક બની ગઈ!`);
+      window.agencies.push(agObj);
+      alert(`✅ નવી એજન્સી (${name}) ક્લાઉડ પર સફળતાપૂર્વક બની ગઈ!`);
     } else {
-      let ag = window.agencies[editIdx];
-      ag.name = name; ag.mobile = mobile; ag.clientId = clientId; ag.key = key; ag.maxDevices = maxDev;
-      ag.expiryDate = expiryISO;
-      alert(`✅ એજન્સી (${name}) અપડેટ થઈ ગઈ!`);
+      window.agencies[editIdx] = agObj;
+      alert(`✅ એજન્સી (${name}) ક્લાઉડ પર અપડેટ થઈ ગઈ!`);
     }
 
-    localStorage.setItem("saas_agencies", JSON.stringify(window.agencies));
     window.resetSuperAdminForm();
     window.loadAgencyListInAdmin();
   }
@@ -577,10 +596,11 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     });
   }
 
-  window.deleteAgency = function(idx){
-    if(!confirm("આ એજન્સી ડિલીટ કરવી છે?")) return;
+  window.deleteAgency = async function(idx){
+    if(!confirm("આ એજન્સી ક્લાઉડમાંથી ડિલીટ કરવી છે?")) return;
+    let ag = window.agencies[idx];
+    await deleteDoc(doc(window.db, "global_system_agencies", ag.clientId));
     window.agencies.splice(idx, 1);
-    localStorage.setItem("saas_agencies", JSON.stringify(window.agencies));
     window.loadAgencyListInAdmin();
   }
 
@@ -591,6 +611,9 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let clockEl = document.getElementById("liveClockBoard");
       if(clockEl) clockEl.innerText = `📅 ${dt.date} (${dt.day}) | ⏰ સમય: ${dt.time}`;
     }, 1000);
+
+    // Load agencies from cloud first
+    await window.loadAllAgenciesFromCloud();
 
     const urlParams = new URLSearchParams(window.location.search);
     const urlKey = urlParams.get('agency');
@@ -627,6 +650,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
   };
 
   window.loginWithIdAndKey = async function(){
+    await window.loadAllAgenciesFromCloud();
     let inputId = document.getElementById("loginIdInput").value.trim().toLowerCase();
     let inputKey = document.getElementById("loginKeyInput").value.trim();
     let found = window.agencies.find(a => (a.clientId === inputId || a.name.toLowerCase() === inputId) && String(a.key).trim() === String(inputKey));
