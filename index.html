@@ -77,7 +77,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 .product-admin{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px;background:#f8f9fa;border-radius:8px;margin-bottom:5px;}
 .product-admin img{width:40px;height:40px;object-fit:cover;border-radius:5px;}
 .admin-info{flex:1;}
-.admin-actions{display:flex;gap:3px;}
+.admin-actions{display:flex;gap:3px;flex-wrap:wrap;}
 .admin-actions button{padding:5px 7px;font-size:11px;}
 
 .ledger{background:#fff8e1;padding:6px;border-radius:8px;max-height:320px;overflow-y:auto;}
@@ -258,21 +258,21 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
   <input type="hidden" id="editId">
   <label>વસ્તુનું નામ</label>
   <div style="display:flex;gap:4px;">
-    <input id="prodName" placeholder="દા.ત. જીરું સોડા" lang="gu" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <input id="prodName" placeholder="દા.ત. જીરું સોડા કે ડુંગળી" lang="gu" autocomplete="off" autocapitalize="off" spellcheck="false">
     <button class="voice-btn" type="button" onclick="startVoice('prodName')">🎤</button>
   </div>
   <div class="row">
     <div>
-      <label>MRP</label>
+      <label>MRP / કિંમત</label>
       <div style="display:flex;gap:4px;">
         <input id="prodMrp" placeholder="₹20" autocomplete="off" autocapitalize="off" spellcheck="false">
         <button class="voice-btn" type="button" onclick="startVoice('prodMrp')">🎤</button>
       </div>
     </div>
     <div>
-      <label>સાઈઝ / વેરિઅન્ટ</label>
+      <label>સાઈઝ / એકમ (Unit)</label>
       <div style="display:flex;gap:4px;">
-        <input id="prodSize" placeholder="200ml" lang="gu" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <input id="prodSize" placeholder="200ml અથવા 1 Kg" lang="gu" autocomplete="off" autocapitalize="off" spellcheck="false">
         <button class="voice-btn" type="button" onclick="startVoice('prodSize')">🎤</button>
       </div>
     </div>
@@ -281,10 +281,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       <input id="prodGst" type="number" placeholder="0">
     </div>
   </div>
-  <label style="margin-top:6px;">📦 Packing બનાવો</label>
-  <div class="packing-head"><span>પેકિંગ</span><span>ભાવ ₹</span><span>નંગ</span><span></span></div>
+  <label style="margin-top:6px;">📦 Packing / Units બનાવો (પેટી, કિલો, નંગ વગેરે)</label>
+  <div class="packing-head"><span>પેકિંગ/યુનિટ નામ</span><span>ભાવ ₹</span><span>જથ્થો/સંખ્યા</span><span></span></div>
   <div id="packingContainer"></div>
-  <button class="btn btn-primary" type="button" style="width:100%;margin-top:4px;padding:6px;font-size:12px" onclick="addPackingRow()">➕ નવું Packing ઉમેરો</button>
+  <button class="btn btn-primary" type="button" style="width:100%;margin-top:4px;padding:6px;font-size:12px" onclick="addPackingRow()">➕ નવું Packing/Unit ઉમેરો</button>
   
   <label style="margin-top:8px;">📸 પ્રોડક્ટ ફોટો (કેમેરાથી સીધો ફોટો પાડો અથવા ગેલેરીમાંથી લો)</label>
   <div style="display:flex; gap:6px; margin-bottom:6px;">
@@ -316,7 +316,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
 <!-- PRODUCT LIST -->
 <div class="card">
-  <h3>📦 તમારી Products</h3>
+  <h3>📦 તમારી Products & Stock Management</h3>
   <div id="adminProductList"></div>
 </div>
 
@@ -360,6 +360,26 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
 </div>
 
+<!-- EDIT BILL MODAL -->
+<div id="editBillModal" class="modal-overlay hidden">
+  <div class="modal-box" style="text-align:left;">
+    <h3 style="color:#0d6efd; text-align:center;">✏️ ઓર્ડર / બિલ એડિટ કરો</h3>
+    <input type="hidden" id="editBillId">
+    <label>દુકાનનું નામ:</label>
+    <input id="editBillShopName" readonly style="background:#f1f5f9;">
+    <label>મોબાઈલ નંબર:</label>
+    <input id="editBillMobile" readonly style="background:#f1f5f9;">
+    <label>ઓર્ડર વિગત / આઇટમ્સ (સુધારો કરો):</label>
+    <textarea id="editBillItems" rows="5" lang="gu" style="font-size:12px;"></textarea>
+    <label>ફાઇનલ બિલ રકમ (₹):</label>
+    <input id="editBillGrandTotal" type="number" step="0.01">
+    <div style="display:flex; gap:6px; margin-top:12px;">
+      <button class="btn btn-success" type="button" style="flex:1;" onclick="saveEditedBillAndSendWhatsApp()">💾 સેવ કરીને WhatsApp મોકલો</button>
+      <button class="btn btn-secondary" type="button" style="background:#6c757d;" onclick="closeEditBillModal()">કેન્સલ</button>
+    </div>
+  </div>
+</div>
+
 
 <script type="module">
   import { collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -384,7 +404,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     }
   }
 
-  // 100% Firebase Cloud Powered Agencies Management System
   window.agencies = [];
   window.activeAgencyKey = null;
   window.currentAgencyData = null;
@@ -401,7 +420,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
         window.agencies.push(docSnap.data());
       });
 
-      // If cloud is totally empty, initialize default master agencies
       if(window.agencies.length === 0){
         let defaultList = [
           { name: "GOOD LUCK WHOLESALE", mobile: "7878515174", clientId: "goodluck", key: "GOODLUCK2026", maxDevices: 5, expiryDate: new Date(Date.now() + 30*24*60*60*1000).toISOString() },
@@ -536,7 +554,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
     let agObj = { name: name, mobile: mobile, clientId: clientId, key: key, maxDevices: maxDev, expiryDate: expiryISO };
 
-    // Save directly to Firebase Cloud
     await setDoc(doc(window.db, "global_system_agencies", clientId), agObj);
 
     if(editIdx === -1){
@@ -588,12 +605,19 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
           <b>${ag.name}</b> (${ag.mobile})<br>
           🆔 ID: <code>${ag.clientId}</code> | 🔑 પાસવર્ડ: <code>${ag.key}</code><br>
           ⏳ એક્સપાયરી: ${expObj.date} (<span style="color:#d9534f; font-weight:bold;">${timeLeftStr}</span>)
-          <div style="margin-top:6px; display:flex; gap:4px;">
+          <div style="margin-top:6px; display:flex; gap:4px; flex-wrap:wrap;">
             <button class="btn btn-primary" type="button" style="padding:3px 8px; font-size:11px;" onclick="editAgency(${realIdx})">Edit</button>
+            <button class="btn btn-warning" type="button" style="padding:3px 8px; font-size:11px; color:#000;" onclick="resetAgencyDevices('${ag.clientId}')">🔄 Reset Devices</button>
             <button class="btn btn-danger" type="button" style="padding:3px 8px; font-size:11px;" onclick="deleteAgency(${realIdx})">Delete</button>
           </div>
         </div>`;
     });
+  }
+
+  window.resetAgencyDevices = async function(clientId){
+    if(!confirm("શું તમે આ એજન્સીના બધા લૉગિન/ડિવાઇસ રીસેટ કરવા માંગો છો?")) return;
+    localStorage.removeItem("saas_active_key");
+    alert("✅ એજન્સીના ડિવાઇસ સફળતાપૂર્વક રીસેટ થઈ ગયા છે! હવે ગ્રાહક નવા ફોનમાં આસાનીથી લૉગિન કરી શકશે.");
   }
 
   window.deleteAgency = async function(idx){
@@ -612,7 +636,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       if(clockEl) clockEl.innerText = `📅 ${dt.date} (${dt.day}) | ⏰ સમય: ${dt.time}`;
     }, 1000);
 
-    // Load agencies from cloud first
     await window.loadAllAgenciesFromCloud();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -708,7 +731,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       window.products = [];
       prodSnap.forEach((doc) => { window.products.push(doc.data()); });
       if(window.products.length === 0){
-        window.products = [{id:Date.now(), name:"જીરું સોડા", mrp:"20", size:"200ml", gst:0, image:"", packings:[{name:"પેટી", price:270, pcs:30}]}];
+        window.products = [{id:Date.now(), name:"જીરું સોડા", mrp:"20", size:"200ml", gst:0, outOfStock:false, image:"", packings:[{name:"પેટી", price:270, pcs:30}]}];
         await window.saveProductsToFirebase();
       }
 
@@ -800,9 +823,9 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let row = document.createElement("div");
     row.className = "packing-row";
     row.innerHTML = `
-      <input class="pack-name" placeholder="પેટી/થેલો/નંગ" lang="gu" value="${name}" autocomplete="off">
-      <input class="pack-price" type="number" min="0" placeholder="ભાવ" value="${price}">
-      <input class="pack-pcs" type="number" min="1" placeholder="નંગ" value="${pcs}">
+      <input class="pack-name" placeholder="પેટી, કિલો, નંગ" lang="gu" value="${name}" autocomplete="off">
+      <input class="pack-price" type="number" min="0" placeholder="ભાવ ₹" value="${price}">
+      <input class="pack-pcs" type="number" min="1" placeholder="સંખ્યા" value="${pcs}">
       <button class="btn btn-danger" type="button" style="padding:4px" onclick="this.parentElement.remove()">×</button>
     `;
     container.appendChild(row);
@@ -856,14 +879,17 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     packingRows.forEach(row=>{
       let pName = row.querySelector(".pack-name").value.trim();
       let price = parseFloat(row.querySelector(".pack-price").value) || 0;
-      let pcs = parseInt(row.querySelector(".pack-pcs").value) || 0;
-      if(pName && price>0 && pcs>0) packings.push({name:pName, price:price, pcs:pcs});
+      let pcs = parseFloat(row.querySelector(".pack-pcs").value) || 1;
+      if(pName && price>0) packings.push({name:pName, price:price, pcs:pcs});
     });
-    if(packings.length === 0){ alert("ઓછામાં ઓછું એક Packing ઉમેરો."); return; }
+    if(packings.length === 0){ alert("ઓછામાં ઓછું એક Packing/Unit ઉમેરો."); return; }
 
     let image = document.getElementById("prodImageBase64").value;
     let newProdId = editId ? editId : Date.now();
-    let pObj = { id: Number(newProdId), name: name, mrp: mrp, size: size, gst: gst, image: image || "", packings: packings };
+    let existingProd = window.products.find(x => String(x.id) === String(editId));
+    let outOfStock = existingProd ? existingProd.outOfStock : false;
+
+    let pObj = { id: Number(newProdId), name: name, mrp: mrp, size: size, gst: gst, outOfStock: outOfStock, image: image || "", packings: packings };
 
     if(editId){
       let idx = window.products.findIndex(x => String(x.id) === String(editId));
@@ -914,6 +940,16 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     (p.packings || []).forEach(pk => { window.addPackingRow(pk.name, pk.price, pk.pcs); });
   }
 
+  window.toggleStockStatus = async function(id){
+    let p = window.products.find(x => String(x.id) === String(id));
+    if(p){
+      p.outOfStock = !p.outOfStock;
+      await window.saveProductsToFirebase();
+      window.loadAdminProducts();
+      window.loadOrderProducts();
+    }
+  }
+
   window.deleteProduct = async function(id){
     if(!confirm("આ Product Delete કરવી છે?")) return;
     window.products = window.products.filter(p => String(p.id) !== String(id));
@@ -929,15 +965,18 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     box.innerHTML = "";
     if(window.products.length === 0){ box.innerHTML = "કોઈ Product નથી."; return; }
     window.products.forEach(p=>{
-      let packingText = (p.packings || []).map(x => `${x.name}: ₹${x.price}/${x.pcs} નંગ`).join(" | ");
+      let packingText = (p.packings || []).map(x => `${x.name}: ₹${x.price} (${x.pcs})`).join(" | ");
+      let stockBtnColor = p.outOfStock ? "#dc3545" : "#198754";
+      let stockBtnText = p.outOfStock ? "🔴 Stock: બંધ" : "🟢 Stock: ચાલુ";
       box.innerHTML += `
-        <div class="product-admin">
+        <div class="product-admin" style="${p.outOfStock?'opacity:0.6;background:#ffe6e6;':''}">
           ${p.image?`<img src="${p.image}">`:`<div style="width:40px;height:40px;border-radius:5px;background:#ddd;display:flex;align-items:center;justify-content:center">📦</div>`}
           <div class="admin-info">
-            <b>${p.name}</b><br><small>MRP ₹${p.mrp} | ${p.size} | GST ${p.gst || 0}%</small>
+            <b>${p.name}</b> ${p.outOfStock ? '<span style="color:red;font-size:11px;">(હાલમાં હાજર નથી)</span>' : ''}<br><small>MRP ₹${p.mrp} | ${p.size} | GST ${p.gst || 0}%</small>
             <div style="font-size:10px;color:#0d6efd;margin-top:2px">${packingText}</div>
           </div>
           <div class="admin-actions">
+            <button class="btn" type="button" style="background:${stockBtnColor};color:#fff;font-size:10px;padding:5px;" onclick="toggleStockStatus(${p.id})">${stockBtnText}</button>
             <button class="btn btn-warning" type="button" onclick="editProduct(${p.id})">Edit</button>
             <button class="btn btn-danger" type="button" onclick="deleteProduct(${p.id})">Del</button>
           </div>
@@ -979,10 +1018,20 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     box.innerHTML = "";
     if(window.products.length === 0){ box.innerHTML = "કોઈ Product ઉપલબ્ધ નથી."; return; }
     window.products.forEach(p=>{
-      let options = `<option value="">Packing પસંદ કરો</option>`;
+      if(p.outOfStock){
+        box.innerHTML += `
+          <div class="product" style="opacity:0.6;background:#fff5f5;border-color:#feb2b2;">
+            <div class="product-top">
+              ${p.image?`<img src="${p.image}">`:`<div style="width:45px;height:45px;border-radius:6px;background:#ddd;display:flex;align-items:center;justify-content:center">📦</div>`}
+              <div class="product-info"><b>${p.name}</b><div class="mrp-size" style="color:red;">⚠️ હાલમાં ઉપલબ્ધ નથી (Out of Stock)</div></div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      let options = `<option value="">Packing/Unit પસંદ કરો</option>`;
       (p.packings || []).forEach((pk,i)=>{
-        let perPiece = (pk.price / pk.pcs).toFixed(2);
-        options += `<option value="${i}" data-price="${pk.price}">1 ${pk.name} ₹${pk.price} / ${pk.pcs} નંગ (એક નંગ ₹${perPiece})</option>`;
+        options += `<option value="${i}" data-price="${pk.price}">${pk.name} - ₹${pk.price} (${pk.pcs})</option>`;
       });
       box.innerHTML += `
         <div class="product" data-id="${p.id}" data-gst="${p.gst || 0}">
@@ -1007,7 +1056,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let option = select.options[select.selectedIndex];
       let price = parseFloat(option?.dataset.price) || 0;
       let qtyInput = product.querySelector(".qty");
-      let qty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+      let qty = qtyInput ? parseFloat(qtyInput.value) || 0 : 0;
       let gst = parseFloat(product.dataset.gst) || 0;
       let total = price * qty;
       let gstAmount = (total * gst) / 100;
@@ -1042,13 +1091,13 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let select = product.querySelector(".packing-select");
       if(!select) return;
       let option = select.options[select.selectedIndex];
-      let qty = parseInt(product.querySelector(".qty").value) || 0;
+      let qty = parseFloat(product.querySelector(".qty").value) || 0;
       if(!option || !option.value || qty <= 0) return;
       let price = parseFloat(option.dataset.price) || 0;
       let gst = parseFloat(product.dataset.gst) || 0;
       let productTotal = price * qty;
       subtotal += productTotal; gstTotal += (productTotal * gst) / 100;
-      orderText += `▪️ ${product.querySelector(".product-info b").innerText} - ${option.text.split("₹")[0].trim()} × ${qty} = ₹${productTotal.toFixed(2)}\n`;
+      orderText += `▪️ ${product.querySelector(".product-info b").innerText} - ${option.text.split(" - ")[0]} × ${qty} = ₹${productTotal.toFixed(2)}\n`;
     });
     if(subtotal <= 0){ alert("ઓછામાં ઓછું એક Product પસંદ કરો."); return; }
 
@@ -1134,6 +1183,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       let currentRem = parseFloat(record.remainingBalance !== undefined ? record.remainingBalance : record.grandTotal);
       let buttons = "";
       if(!record.deleted && currentRem > 0){
+        buttons += `<button class="btn btn-warning" type="button" style="font-size:10px;padding:4px 6px;color:#000;" onclick="openEditBillModal(${record.id})">✏️ Edit Bill</button>`;
         buttons += `<button class="btn btn-success" type="button" style="font-size:10px;padding:4px 6px" onclick='sendCustomerMultiBillReminder("${record.mobile}")'>📲 Reminder</button>`;
         buttons += `<button class="btn btn-primary" type="button" style="font-size:10px;padding:4px 6px" onclick="addPartialPayment(${record.id})">💰 ₹ જમા કરો</button>`;
         buttons += `<button class="btn btn-warning" type="button" style="font-size:10px;padding:4px 6px;color:#000;" onclick="markPaidCompletely(${record.id})">✅ આખું જમા</button>`;
@@ -1174,6 +1224,46 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
           <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${buttons}</div>
         </div>`;
     });
+  }
+
+  window.openEditBillModal = function(recId){
+    let rec = window.ledger.find(x => x.id === recId);
+    if(!rec) return;
+    document.getElementById("editBillId").value = rec.id;
+    document.getElementById("editBillShopName").value = rec.shopName;
+    document.getElementById("editBillMobile").value = rec.mobile;
+    document.getElementById("editBillItems").value = rec.items;
+    document.getElementById("editBillGrandTotal").value = rec.grandTotal;
+    document.getElementById("editBillModal").classList.remove("hidden");
+  }
+
+  window.closeEditBillModal = function(){
+    document.getElementById("editBillModal").classList.add("hidden");
+  }
+
+  window.saveEditedBillAndSendWhatsApp = async function(){
+    let recId = parseInt(document.getElementById("editBillId").value);
+    let rec = window.ledger.find(x => x.id === recId);
+    if(!rec) return;
+
+    let newItems = document.getElementById("editBillItems").value.trim();
+    let newGrandTotal = parseFloat(document.getElementById("editBillGrandTotal").value) || 0;
+    if(!newItems || newGrandTotal <= 0){ alert("સાચી માહિતી નાખો."); return; }
+
+    let diff = newGrandTotal - parseFloat(rec.grandTotal);
+    rec.items = newItems;
+    rec.grandTotal = newGrandTotal.toFixed(2);
+    let currentRem = parseFloat(rec.remainingBalance !== undefined ? rec.remainingBalance : rec.grandTotal) + diff;
+    rec.remainingBalance = currentRem > 0 ? currentRem.toFixed(2) : "0.00";
+
+    await window.saveLedgerToFirebase(rec);
+    window.closeEditBillModal();
+    window.loadLedger();
+    window.loadCustomerDirectory();
+
+    let msg = `નમસ્કાર 🙏 *${rec.shopName}*,\n\nતમારો ઓર્ડર (બિલ નં: *${rec.billNo}*) માં સ્ટોક કે ફેરફાર મુજબ સુધારો કરવામાં આવ્યો છે.\n\n📦 *સુધારેલી વિગત:*\n${newItems}\n💰 *નવું ફાઇનલ બિલ: ₹${newGrandTotal.toFixed(2)}*\n\nકૃપા કરીને નોંધ લેશो.\n\n*${window.settings.name}*`;
+    window.open(`https://wa.me/91${rec.mobile}?text=` + encodeURIComponent(msg), "_blank");
+    alert("✅ ઓર્ડર એડિટ થઈ ગયો છે અને ગ્રાહકને WhatsApp પર સુધારેલું બિલ મોકલી આપવામાં આવ્યું છે!");
   }
 
   window.sendCustomerMultiBillReminder = function(mobile){
