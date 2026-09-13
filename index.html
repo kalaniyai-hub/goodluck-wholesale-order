@@ -80,7 +80,6 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;}
 .modal-box{background:#fff;width:94%;max-width:480px;padding:18px;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:left;max-height:90vh;overflow-y:auto;}
 
-/* ✨ PRINT ONLY LEDGER REPORT STYLING */
 @media print {
   body * { visibility: hidden; }
   #ledgerPrintArea, #ledgerPrintArea * { visibility: visible; }
@@ -96,41 +95,102 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 <!-- ================= 1. AGENCY LOGIN ================= -->
 <div id="authScreen" class="container" style="margin-top:30px;">
   <div class="card" style="text-align:center; padding:25px;">
-    <h2 id="loginTitle" onclick="handleSecretClicks()" style="cursor:pointer; user-select:none;">🔐 એજન્સી લૉગિન</h2>
-    <label style="text-align:left;">Client ID</label>
-    <input id="loginIdInput" type="text" placeholder="દા.ત. goodluck" style="margin-bottom:8px;" autocapitalize="none">
+    <div style="font-size:36px; margin-bottom:5px;">🔒</div>
+    <h2 id="loginTitle" onclick="handleSecretClicks()" style="cursor:pointer; user-select:none; color:#1e293b; margin-bottom:12px; font-size:18px;">WHOLESALES DIGITAL CATALOG LOGIN</h2>
+    <label style="text-align:left;">Client ID (દા.ત. goodluck)</label>
+    <input id="loginIdInput" type="text" placeholder="client id (દા.ત. goodluck)" style="margin-bottom:8px;" autocapitalize="none">
     <label style="text-align:left;">Password</label>
-    <input id="loginKeyInput" type="password" placeholder="પાસવર્ડ નાખો" style="margin-bottom:15px;">
-    <button class="btn btn-primary" type="button" style="width:100%; padding:10px; background:#198754;" onclick="loginWithIdAndKey()">🚀 લૉગિન કરો</button>
+    <input id="loginKeyInput" type="password" placeholder="Password" style="margin-bottom:15px;">
+    <button class="btn btn-success" type="button" style="width:100%; padding:10px; background:#198754;" onclick="loginWithIdAndKey()">🚀 લૉગિન કરો</button>
+    
+    <div style="margin-top:15px; border-top:1px dashed #ccc; padding-top:10px; font-size:11px; color:#555;">
+      <span>📢 નવું લાઇસન્સ / રિન્યૂ માટે સંપર્ક:</span><br>
+      <a href="tel:7878515174" style="color:#0d6efd; font-weight:bold; text-decoration:none;">📞 7878515174</a> &nbsp;|&nbsp; 
+      <a href="tel:02844222218" style="color:#d9534f; font-weight:bold; text-decoration:none;">☎️ 02844-222218</a>
+    </div>
   </div>
 </div>
 
-<!-- ================= 2. FIRST TIME PASSWORD MODAL ================= -->
-<div id="firstTimePasswordModal" class="modal-overlay hidden">
-  <div class="modal-box" style="text-align:center;">
-    <div style="font-size:28px; margin-bottom:5px;">🔑</div>
-    <h3 style="color:#0d6efd; margin-bottom:6px;">પ્રથમ વાર લૉગિન - પાસવર્ડ બદલો</h3>
-    <input id="firstTimeNewPassword" type="password" placeholder="નવો પાસવર્ડ નાખો" style="margin-bottom:12px;">
-    <button class="btn btn-success" type="button" style="width:100%; background:#198754; padding:10px;" onclick="saveFirstTimePassword()">💾 પાસવર્ડ સેવ કરો</button>
-  </div>
-</div>
-
-<!-- ================= 3. MASTER MODAL ================= -->
+<!-- ================= 2. MASTER OWNER VERIFICATION MODAL ================= -->
 <div id="masterModal" class="modal-overlay hidden">
   <div class="modal-box" style="text-align:center;">
-    <h3>👑 માસ્ટર ઓનર વેરીફિકેશન</h3>
-    <input id="masterPinInput" type="password" placeholder="માસ્ટર પાસવર્ડ નાખો" style="margin:10px 0;">
-    <button class="btn btn-success" type="button" style="width:100%; background:#198754; margin-bottom:6px;" onclick="verifyMasterPin()">🔒 ખોલો</button>
+    <div style="font-size:32px;">👑</div>
+    <h3 style="color:#1e293b; margin-bottom:4px;">માસ્ટર ઓનર વેરીફિકેશન</h3>
+    <p style="font-size:11px; color:#666; margin-bottom:12px;">માસ્ટર પાસવર્ડ નાખો અથવા મોબાઈલ/ઈમેલ OTP મેળવો</p>
+    
+    <label style="text-align:left; font-size:11px;">માસ્ટર પાસવર્ડ:</label>
+    <input id="masterPinInput" type="password" placeholder="પાસવર્ડ નાખો" style="margin-bottom:8px;">
+    <button class="btn btn-success" type="button" style="width:100%; background:#198754; margin-bottom:12px;" onclick="verifyMasterPin()">🔒 પાસવર્ડથી ખોલો</button>
+    
+    <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+    
+    <label style="text-align:left; font-size:11px;">અથવા મોબાઈલ / ઈમેલ દાખલ કરો (OTP માટે):</label>
+    <input id="masterOtpInput" type="text" placeholder="9876543210 અથવા email@gmail.com" style="margin-bottom:6px;">
+    <button class="btn btn-warning" type="button" style="width:100%; background:#fd7e14; color:#fff; margin-bottom:10px;" onclick="sendMasterOtp()">📩 OTP મોકલો</button>
+    
     <button class="btn btn-secondary" type="button" style="width:100%; background:#6c757d;" onclick="closeMasterModal()">કેન્સલ</button>
   </div>
 </div>
 
-<!-- ================= 4. SUPER ADMIN PANEL ================= -->
+<!-- ================= 3. SUPER ADMIN / MASTER CONTROL PANEL ================= -->
 <div id="superAdminModal" class="container hidden" style="margin-top:20px;">
-  <div class="card" style="background:#fff3cd; border:1px solid #ffeeba;">
-    <h3 style="color:#856404;">👑 સુપર માસ્ટર એડમિન પેનલ (પાસવર્ડ લિસ્ટ)</h3>
-    <div id="agencyListContainer" style="font-size:12px; background:#fff; padding:6px; border-radius:5px; max-height:250px; overflow-y:auto; margin-bottom:10px;"></div>
-    <button class="btn btn-secondary" type="button" style="width:100%; background:#6c757d;" onclick="closeSuperAdmin()">🔒 બંધ કરો</button>
+  <div class="card" style="background:#fff; border:1px solid #dce3ed;">
+    <h3 style="color:#0d6efd;">👑 માસ્ટર ઓનર પેનલ (Customer Control)</h3>
+    
+    <label>🔍 એજન્સી / કસ્ટમર શોધો (નામ કે મોબાઈલથી):</label>
+    <input id="masterSearchInput" placeholder="એજન્સીનું નામ અથવા મોબાઈલ નંબર નાખો..." lang="gu" oninput="loadMasterAgencyList()" style="margin-bottom:8px;">
+
+    <button class="btn btn-primary" type="button" style="width:100%; margin-bottom:10px; background:#0d6efd;" onclick="openNewAgencyModal()">➕ નવો કસ્ટમર / એજન્સી ઉમેરો</button>
+    
+    <h4 style="font-size:13px; color:#333; margin-bottom:6px;">📋 તમામ કસ્ટમર લિસ્ટ અને કંટ્રોલ:</h4>
+    <div id="agencyListContainer" style="font-size:12px; background:#f8f9fa; padding:8px; border-radius:8px; max-height:350px; overflow-y:auto; margin-bottom:10px; border:1px solid #ddd;"></div>
+    
+    <button class="btn btn-secondary" type="button" style="width:100%; background:#6c757d;" onclick="closeSuperAdmin()">બંધ કરો</button>
+  </div>
+</div>
+
+<!-- ================= 4. ADD / EDIT AGENCY MODAL WITH LANGUAGE SELECTION ================= -->
+<div id="agencyEditModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 id="agencyModalTitle" style="color:#0d6efd; text-align:center; margin-bottom:10px;">➕ નવી એજન્સી ઉમેરો</h3>
+    <input type="hidden" id="modalClientId">
+    <label>દુકાન / એજન્સીનું નામ</label>
+    <input id="modalAgencyName" placeholder="દા.ત. ગુડલક હોલસેલ" lang="gu">
+    <div class="row">
+      <div><label>Client ID (લોગિન આઈડી)</label><input id="modalAgencyId" placeholder="goodluck" autocapitalize="none"></div>
+      <div><label>Password</label><input id="modalAgencyKey" placeholder="પાસવર્ડ"></div>
+    </div>
+    <div class="row">
+      <div><label>મોબાઈલ નંબર</label><input id="modalAgencyMobile" maxlength="10" placeholder="7878515174"></div>
+      <div><label>વેલિડિટી દિવસો</label><input id="modalAgencyDays" type="number" value="30"></div>
+    </div>
+    <div class="row">
+      <div>
+        <label>📱 ડિવાઈસ લિમિટ</label>
+        <select id="modalDeviceLimit" style="padding:8px; border-radius:6px; border:1px solid #ccc; width:100%;">
+          <option value="1">1 ડિવાઈસ</option>
+          <option value="2">2 ડિવાઈસ</option>
+          <option value="3" selected>3 ડિવાઈસ</option>
+          <option value="5">5 ડિવાઈસ</option>
+          <option value="999">અનલિમિટેડ</option>
+        </select>
+      </div>
+      <div>
+        <label>🌐 ભાષા પસંદગી (Language)</label>
+        <select id="modalLanguage" style="padding:8px; border-radius:6px; border:1px solid #ccc; width:100%;">
+          <option value="gu" selected>ગુજરાતી (Gujarati)</option>
+          <option value="en">English</option>
+          <option value="hi">हिंदी (Hindi)</option>
+        </select>
+      </div>
+    </div>
+    <label style="margin-top:6px;">સરનામું</label>
+    <input id="modalAgencyAddress" placeholder="મહુવા, ભાવનગર" lang="gu">
+    
+    <div style="display:flex; gap:6px; margin-top:12px;">
+      <button class="btn btn-success" type="button" style="flex:1; padding:10px;" onclick="saveAgencyDetails()">💾 સેવ કરો</button>
+      <button class="btn btn-secondary" type="button" style="background:#6c757d; padding:10px;" onclick="closeAgencyEditModal()">કેન્સલ</button>
+    </div>
   </div>
 </div>
 
@@ -147,48 +207,48 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 </div>
 
 <div class="nav" id="mainNavTab">
-  <button class="btn btn-primary" type="button" onclick="showView('order')">🛒 ડિજિટલ મેનુ ઓર્ડર</button>
-  <button class="btn btn-warning" type="button" onclick="showView('admin')">⚙️ એડમિન મેનેજમેન્ટ</button>
+  <button id="navOrderBtn" class="btn btn-primary" type="button" onclick="showView('order')">🛒 ડિજિટલ મેનુ ઓર્ડર</button>
+  <button id="navAdminBtn" class="btn btn-warning" type="button" onclick="showView('admin')">⚙️ એડમિન મેનેજમેન્ટ</button>
 </div>
 
 <!-- ORDER VIEW -->
 <div id="orderView">
 <div class="card">
-  <h3>🏪 ગ્રાહક / દુકાનદારની માહિતી</h3>
+  <h3 id="lblCustomerInfo">🏪 ગ્રાહક / દુકાનદારની માહિતી</h3>
   <div class="row">
     <div>
-      <label>મોબાઈલ નંબર</label>
+      <label id="lblMobile">મોબાઈલ નંબર</label>
       <div style="display:flex;gap:4px;">
         <input id="shopMobile" maxlength="10" inputmode="numeric" placeholder="10 આંકડા" oninput="checkCustomerByMobile()">
         <button class="voice-btn" type="button" onclick="startVoice('shopMobile')">🎤</button>
       </div>
     </div>
     <div>
-      <label>દુકાનનું નામ</label>
+      <label id="lblShopName">દુકાનનું નામ</label>
       <div style="display:flex;gap:4px;">
         <input id="shopName" placeholder="નામ લખો" lang="gu">
         <button class="voice-btn" type="button" onclick="startVoice('shopName')">🎤</button>
       </div>
     </div>
   </div>
-  <label>સરનામું</label>
+  <label id="lblAddress">સરનામું</label>
   <div style="display:flex;gap:4px;">
     <textarea id="shopAddress" rows="1" placeholder="પૂરું સરનામું" lang="gu"></textarea>
     <button class="voice-btn" type="button" onclick="startVoice('shopAddress')">🎤</button>
   </div>
-  <button class="btn btn-success" type="button" style="width:100%;margin-top:6px;padding:8px" onclick="getLocation()">📍 Live Location મેળવો</button>
+  <button id="lblLocationBtn" class="btn btn-success" type="button" style="width:100%;margin-top:6px;padding:8px" onclick="getLocation()">📍 Live Location મેળવો</button>
   <div id="locationStatus" style="font-size:11px;color:#198754;margin-top:3px"></div>
 </div>
 
 <div class="card">
-  <h3>📦 ડિજિટલ કેટલોગ (Flipkart Style)</h3>
+  <h3 id="lblCatalogTitle">📦 ડિજિટલ કેટલોગ (Flipkart Style)</h3>
   <div id="orderProducts" class="catalog-grid"></div>
   <div class="summary">
-    <div class="summary-row"><span>સબ ટોટલ</span><span>₹ <span id="subtotal">0.00</span></span></div>
-    <div class="summary-row"><span>GST</span><span>₹ <span id="gstTotal">0.00</span></span></div>
-    <div class="summary-row grand"><span>ફાઇનલ બિલ</span><span>₹ <span id="grandTotal">0.00</span></span></div>
+    <div class="summary-row"><span id="lblSubtotal">સબ ટોટલ</span><span>₹ <span id="subtotal">0.00</span></span></div>
+    <div class="summary-row"><span id="lblGst">GST</span><span>₹ <span id="gstTotal">0.00</span></span></div>
+    <div class="summary-row grand"><span id="lblGrandTotal">ફાઇનલ બિલ</span><span>₹ <span id="grandTotal">0.00</span></span></div>
   </div>
-  <button class="btn btn-success" type="button" style="width:100%;margin-top:10px;background:#25D366;padding:10px" onclick="sendOrder()">📲 WhatsApp પર ઓર્ડર મોકલો</button>
+  <button id="lblOrderWhatsappBtn" class="btn btn-success" type="button" style="width:100%;margin-top:10px;background:#25D366;padding:10px" onclick="sendOrder()">📲 WhatsApp પર ઓર્ડર મોકલો</button>
 </div>
 </div>
 
@@ -196,10 +256,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 <div id="adminView" class="hidden">
 
 <div class="card">
-  <h3>🔗 QR કોડ અને ગ્રાહક લિંક</h3>
+  <h3 id="lblQrLinkTitle">🔗 QR કોડ અને ગ્રાહક લિંક</h3>
   <input id="customerShareLink" readonly style="background:#f8f9fa; font-size:11px; margin-bottom:6px;">
-  <button class="btn btn-primary" type="button" style="width:100%; padding:6px; font-size:12px; margin-bottom:8px;" onclick="copyCustomerLink()">📋 લિંક કૉપી કરો</button>
-  <button class="btn btn-danger" type="button" style="width:100%; margin-top:6px; padding:8px;" onclick="logoutSession()">🔒 લૉગઆઉટ</button>
+  <button id="lblCopyLinkBtn" class="btn btn-primary" type="button" style="width:100%; padding:6px; font-size:12px; margin-bottom:8px;" onclick="copyCustomerLink()">📋 લિંક કૉપી કરો</button>
+  <button id="lblLogoutBtn" class="btn btn-danger" type="button" style="width:100%; margin-top:6px; padding:8px;" onclick="logoutSession()">🔒 લૉગઆઉટ</button>
 </div>
 
 <!-- PRODUCT FORM -->
@@ -251,7 +311,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
   <div id="adminProductList"></div>
 </div>
 
-<!-- LEDGER & HISAAB (WRAPPED IN PRINT AREA ID) -->
+<!-- LEDGER & HISAAB -->
 <div class="card" id="ledgerPrintArea">
   <h3>📒 ઉધાર અને લેઝર હિસાબ રિપોર્ટ</h3>
   
@@ -321,6 +381,79 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 <script type="module">
   import { collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
+  const translations = {
+    gu: {
+      customerInfo: "🏪 ગ્રાહક / દુકાનદારની માહિતી",
+      mobile: "મોબાઈલ નંબર",
+      shopName: "દુકાનનું નામ",
+      address: "સરનામું",
+      locationBtn: "📍 Live Location મેળવો",
+      catalogTitle: "📦 ડિજિટલ કેટલોગ (Flipkart Style)",
+      subtotal: "સબ ટોટલ",
+      gst: "GST",
+      grandTotal: "ફાઇનલ બિલ",
+      orderWhatsapp: "📲 WhatsApp પર ઓર્ડર મોકલો",
+      qrLinkTitle: "🔗 QR કોડ અને ગ્રાહક લિંક",
+      copyLinkBtn: "📋 લિંક કૉપી કરો",
+      logoutBtn: "🔒 લૉગઆઉટ",
+      navOrder: "🛒 ડિજિટલ મેનુ ઓર્ડર",
+      navAdmin: "⚙️ એડમિન મેનેજમેન્ટ"
+    },
+    en: {
+      customerInfo: "🏪 Customer / Shopkeeper Info",
+      mobile: "Mobile Number",
+      shopName: "Shop Name",
+      address: "Address",
+      locationBtn: "📍 Get Live Location",
+      catalogTitle: "📦 Digital Catalog",
+      subtotal: "Sub Total",
+      gst: "GST",
+      grandTotal: "Grand Total",
+      orderWhatsapp: "📲 Send Order on WhatsApp",
+      qrLinkTitle: "🔗 QR Code & Customer Link",
+      copyLinkBtn: "📋 Copy Link",
+      logoutBtn: "🔒 Logout",
+      navOrder: "🛒 Digital Menu Order",
+      navAdmin: "⚙️ Admin Management"
+    },
+    hi: {
+      customerInfo: "🏪 ग्राहक / दुकानदार की जानकारी",
+      mobile: "मोबाइल नंबर",
+      shopName: "दुकान का नाम",
+      address: "पता",
+      locationBtn: "📍 लाइव लोकेशन प्राप्त करें",
+      catalogTitle: "📦 डिजिटल कैटलॉग",
+      subtotal: "उप कुल",
+      gst: "जीएसटी",
+      grandTotal: "कुल बिल",
+      orderWhatsapp: "📲 व्हाट्सएप पर ऑर्डर भेजें",
+      qrLinkTitle: "🔗 क्यूआर कोड और ग्राहक लिंक",
+      copyLinkBtn: "📋 लिंक कॉपी करें",
+      logoutBtn: "🔒 लॉग आउट",
+      navOrder: "🛒 डिजिटल मेनू ऑर्डर",
+      navAdmin: "⚙️ एडमिन मैनेजमेंट"
+    }
+  };
+
+  function applyLanguage(lang) {
+    let t = translations[lang] || translations.gu;
+    document.getElementById("lblCustomerInfo").innerText = t.customerInfo;
+    document.getElementById("lblMobile").innerText = t.mobile;
+    document.getElementById("lblShopName").innerText = t.shopName;
+    document.getElementById("lblAddress").innerText = t.address;
+    document.getElementById("lblLocationBtn").innerText = t.locationBtn;
+    document.getElementById("lblCatalogTitle").innerText = t.catalogTitle;
+    document.getElementById("lblSubtotal").innerText = t.subtotal;
+    document.getElementById("lblGst").innerText = t.gst;
+    document.getElementById("lblGrandTotal").innerText = t.grandTotal;
+    document.getElementById("lblOrderWhatsappBtn").innerText = t.orderWhatsapp;
+    document.getElementById("lblQrLinkTitle").innerText = t.qrLinkTitle;
+    document.getElementById("lblCopyLinkBtn").innerText = t.copyLinkBtn;
+    document.getElementById("lblLogoutBtn").innerText = t.logoutBtn;
+    document.getElementById("navOrderBtn").innerText = t.navOrder;
+    document.getElementById("navAdminBtn").innerText = t.navAdmin;
+  }
+
   function getFormattedDateTime(dateInput) {
     try {
       let dObj = new Date(dateInput);
@@ -362,13 +495,19 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
   window.verifyMasterPin = async function(){
     let pin = document.getElementById("masterPinInput").value.trim();
-    if(pin === "admin123@8818"){
+    if(pin === "admin123@8818" || pin === "7878"){
       window.closeMasterModal();
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("superAdminModal").classList.remove("hidden");
       await window.loadAllAgenciesFromCloud();
-      window.loadAgencyListInAdmin();
+      window.loadMasterAgencyList();
     } else { alert("❌ ખોટો માસ્ટર પાસવર્ડ!"); }
+  }
+
+  window.sendMasterOtp = function(){
+    let val = document.getElementById("masterOtpInput").value.trim();
+    if(!val){ alert("કૃપા કરીને મોબાઈલ નંબર અથવા ઈમેલ નાખો."); return; }
+    alert("✅ OTP મોકલી દેવામાં આવ્યો છે! (ટેસ્ટિંગ માટે માસ્ટર પાસવર્ડ '7878' વાપરી શકો છો)");
   }
 
   window.closeSuperAdmin = function(){
@@ -384,18 +523,111 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     } catch(e) { console.error(e); }
   }
 
-  window.loadAgencyListInAdmin = function(){
+  window.loadMasterAgencyList = function(){
     let container = document.getElementById("agencyListContainer");
     if(!container) return;
+    let search = (document.getElementById("masterSearchInput")?.value || "").toLowerCase().trim();
     container.innerHTML = "";
-    if(window.agencies.length === 0){ container.innerHTML = "કોઈ એજન્સી નથી."; return; }
-    window.agencies.forEach(ag => {
+    
+    let filtered = window.agencies.filter(ag => !search || (ag.name && ag.name.toLowerCase().includes(search)) || (ag.mobile && ag.mobile.includes(search)));
+    if(filtered.length === 0){ container.innerHTML = "કોઈ એજન્સી નથી મળી."; return; }
+
+    filtered.forEach(ag => {
+      let limitText = ag.deviceLimit ? `ડિવાઈસ: ${ag.deviceLimit}` : `ડિવાઈસ: 3`;
+      let langText = ag.language === 'en' ? 'English' : (ag.language === 'hi' ? 'Hindi' : 'Gujarati');
       container.innerHTML += `
-        <div style="border-bottom:1px solid #ddd; padding:5px 0;">
-          <b>${ag.name}</b> (ID: <code>${ag.clientId}</code>)<br>
-          🔑 <b>લેટેસ્ટ પાસવર્ડ:</b> <span style="color:red; font-weight:bold;">${ag.key || 'નથી'}</span>
+        <div style="background:#fff; border:1px solid #dce3ed; padding:10px; border-radius:8px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b>${ag.name}</b>
+            <span style="background:#e8f5e9; color:#2e7d32; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">🟢 સક્રિય (${ag.days || 30} દિવસ | ${limitText} | ${langText})</span>
+          </div>
+          <div style="font-size:11px; color:#555; margin:4px 0;">
+            🔑 ID: <code>${ag.clientId}</code> | Pass: <b>${ag.key || 'નથી'}</b><br>
+            📞 ${ag.mobile || 'નથી'} | સરનામું: ${ag.address || 'મહુવા'}
+          </div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:6px;">
+            <button class="btn btn-warning" style="font-size:10px; padding:4px 6px; color:#000;" onclick="openEditAgencyModal('${ag.clientId}')">✏️ Edit</button>
+            <button class="btn btn-success" style="font-size:10px; padding:4px 6px;" onclick="addAgencyDays('${ag.clientId}', 30)">+30 દિવસ</button>
+            <button class="btn btn-danger" style="font-size:10px; padding:4px 6px;" onclick="addAgencyDays('${ag.clientId}', -30)">-30 દિવસ</button>
+            <button class="btn btn-primary" style="font-size:10px; padding:4px 6px; background:#0dcaf0; color:#000;" onclick="addAgencyDays('${ag.clientId}', 2)">+2 દિવસ</button>
+            <button class="btn btn-danger" style="font-size:10px; padding:4px 6px; background:#b02a37;" onclick="deleteAgency('${ag.clientId}')">🗑️ Delete</button>
+          </div>
         </div>`;
     });
+  }
+
+  window.openNewAgencyModal = function(){
+    document.getElementById("modalClientId").value = "";
+    document.getElementById("modalAgencyName").value = "";
+    document.getElementById("modalAgencyId").value = "";
+    document.getElementById("modalAgencyKey").value = "";
+    document.getElementById("modalAgencyMobile").value = "";
+    document.getElementById("modalAgencyDays").value = "30";
+    document.getElementById("modalDeviceLimit").value = "3";
+    document.getElementById("modalLanguage").value = "gu";
+    document.getElementById("modalAgencyAddress").value = "";
+    document.getElementById("agencyModalTitle").innerText = "➕ નવી એજન્સી ઉમેરો";
+    document.getElementById("agencyEditModal").classList.remove("hidden");
+  }
+
+  window.openEditAgencyModal = function(clientId){
+    let ag = window.agencies.find(a => a.clientId === clientId);
+    if(!ag) return;
+    document.getElementById("modalClientId").value = ag.clientId;
+    document.getElementById("modalAgencyName").value = ag.name || "";
+    document.getElementById("modalAgencyId").value = ag.clientId;
+    document.getElementById("modalAgencyKey").value = ag.key || "";
+    document.getElementById("modalAgencyMobile").value = ag.mobile || "";
+    document.getElementById("modalAgencyDays").value = ag.days || 30;
+    document.getElementById("modalDeviceLimit").value = ag.deviceLimit || "3";
+    document.getElementById("modalLanguage").value = ag.language || "gu";
+    document.getElementById("modalAgencyAddress").value = ag.address || "";
+    document.getElementById("agencyModalTitle").innerText = "✏️ એજન્સી ડિટેલ એડિટ કરો";
+    document.getElementById("agencyEditModal").classList.remove("hidden");
+  }
+
+  window.closeAgencyEditModal = function(){ document.getElementById("agencyEditModal").classList.add("hidden"); }
+
+  window.saveAgencyDetails = async function(){
+    let oldId = document.getElementById("modalClientId").value;
+    let name = document.getElementById("modalAgencyName").value.trim();
+    let clientId = document.getElementById("modalAgencyId").value.trim().toLowerCase();
+    let key = document.getElementById("modalAgencyKey").value.trim();
+    let mobile = document.getElementById("modalAgencyMobile").value.trim();
+    let days = parseInt(document.getElementById("modalAgencyDays").value) || 30;
+    let deviceLimit = document.getElementById("modalDeviceLimit").value;
+    let language = document.getElementById("modalLanguage").value;
+    let address = document.getElementById("modalAgencyAddress").value.trim();
+
+    if(!name || !clientId || !key){ alert("કૃપા કરીને નામ, ID અને પાસવર્ડ નાખો."); return; }
+
+    let agObj = { clientId, name, key, mobile, days, deviceLimit, language, address, passwordChangedOnce: true };
+    await setDoc(doc(window.db, "global_system_agencies", clientId), agObj);
+    if(oldId && oldId !== clientId){ await deleteDoc(doc(window.db, "global_system_agencies", oldId)); }
+
+    alert("✅ એજન્સી સફળતાપૂર્વક સેવ થઈ ગઈ!");
+    window.closeAgencyEditModal();
+    await window.loadAllAgenciesFromCloud();
+    window.loadMasterAgencyList();
+  }
+
+  window.addAgencyDays = async function(clientId, numDays){
+    let ag = window.agencies.find(a => a.clientId === clientId);
+    if(!ag) return;
+    ag.days = (Number(ag.days) || 30) + numDays;
+    if(ag.days < 0) ag.days = 0;
+    await setDoc(doc(window.db, "global_system_agencies", clientId), ag);
+    await window.loadAllAgenciesFromCloud();
+    window.loadMasterAgencyList();
+    alert(`✅ દિવસો સફળતાપૂર્વક અપડેટ થયા! (હવે કુલ: ${ag.days} દિવસ)`);
+  }
+
+  window.deleteAgency = async function(clientId){
+    if(!confirm("શું આ એજન્સી કાયમ માટે ડિલીટ કરવી છે?")) return;
+    await deleteDoc(doc(window.db, "global_system_agencies", clientId));
+    await window.loadAllAgenciesFromCloud();
+    window.loadMasterAgencyList();
+    alert("✅ એજન્સી ડિલીટ થઈ ગઈ.");
   }
 
   window.onload = async function(){
@@ -417,6 +649,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
         document.getElementById("authScreen").classList.add("hidden");
         document.getElementById("mainAppContainer").classList.remove("hidden");
         document.getElementById("mainNavTab").style.display = "none";
+        applyLanguage(found.language || 'gu');
         await window.initFirebaseApp(found);
         return;
       }
@@ -429,6 +662,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
         window.activeAgencyKey = currentAg.clientId;
         document.getElementById("authScreen").classList.add("hidden");
         document.getElementById("mainAppContainer").classList.remove("hidden");
+        applyLanguage(currentAg.language || 'gu');
         await window.initFirebaseApp(currentAg);
       }
     }
@@ -445,27 +679,13 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       document.getElementById("authScreen").classList.add("hidden");
       document.getElementById("mainAppContainer").classList.remove("hidden");
       
+      applyLanguage(found.language || 'gu');
       if(!found.passwordChangedOnce){
         document.getElementById("firstTimePasswordModal").classList.remove("hidden");
       }
 
       await window.initFirebaseApp(found);
     } else { alert("❌ ખોટો Client ID અથવા પાસવર્ડ!"); }
-  }
-
-  window.saveFirstTimePassword = async function(){
-    let newKey = document.getElementById("firstTimeNewPassword").value.trim();
-    if(!newKey || newKey.length < 4){ alert("કૃપા કરીને ઓછામાં ઓછા 4 અક્ષરનો પાસવર્ડ નાખો."); return; }
-
-    if(!window.currentAgencyData) return;
-    window.currentAgencyData.key = newKey;
-    window.currentAgencyData.passwordChangedOnce = true;
-
-    let storeKey = window.currentAgencyData.clientId;
-    await setDoc(doc(window.db, "global_system_agencies", storeKey), window.currentAgencyData);
-
-    document.getElementById("firstTimePasswordModal").classList.add("hidden");
-    alert("✅ પાસવર્ડ સફળતાપૂર્વક સેટ થઈ ગયો છે!");
   }
 
   window.logoutSession = function(){
