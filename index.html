@@ -28,12 +28,12 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:Arial,"Noto Sans Gujarati",sans-serif;background:#f3f6fb;color:#222;padding:8px;}
 .container{width:100%;max-width:800px;margin:auto;}
-.header{background:linear-gradient(135deg,#0d6efd,#063b91);color:#fff;text-align:center;padding:12px 10px;border-radius:12px;margin-bottom:10px;position:relative;}
-.header h1{font-size:19px;margin-bottom:2px;}
-.header-phone{font-size:13px;color:#ffeb3b;font-weight:bold;margin-bottom:4px;}
-.header-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.header{background:linear-gradient(135deg,#0f172a,#1e3a8a,#2563eb);color:#fff;text-align:center;padding:15px 10px;border-radius:14px;margin-bottom:12px;position:relative;box-shadow:0 4px 15px rgba(37,99,235,0.3);border-bottom:3px solid #3b82f6;}
+.header h1{font-size:20px;margin-bottom:3px;letter-spacing:0.5px;text-shadow:0 2px 4px rgba(0,0,0,0.2);}
+.header-phone{font-size:13px;color:#fde047;font-weight:bold;margin-bottom:6px;}
+.header-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px;background:rgba(255,255,255,0.1);padding:5px 8px;border-radius:8px;}
 .live-clock-box{background:#000;color:#fff;font-weight:bold;font-size:11px;padding:4px 8px;border-radius:6px;}
-.expiry-badge{font-size:10px;color:#ffeb3b;font-weight:bold;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:6px;}
+.expiry-badge{font-size:10px;color:#fde047;font-weight:bold;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:6px;}
 
 .nav{display:flex;gap:6px;margin-bottom:10px;}
 .btn{border:none;border-radius:7px;padding:8px 10px;font-size:13px;font-weight:bold;cursor:pointer;}
@@ -149,7 +149,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
   </div>
 </div>
 
-<!-- ================= 4. ADD / EDIT AGENCY MODAL WITH LANGUAGE SELECTION ================= -->
+<!-- ================= 4. ADD / EDIT AGENCY MODAL ================= -->
 <div id="agencyEditModal" class="modal-overlay hidden">
   <div class="modal-box">
     <h3 id="agencyModalTitle" style="color:#0d6efd; text-align:center; margin-bottom:10px;">➕ નવી એજન્સી ઉમેરો</h3>
@@ -162,7 +162,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     </div>
     <div class="row">
       <div><label>મોબાઈલ નંબર</label><input id="modalAgencyMobile" maxlength="10" placeholder="7878515174"></div>
-      <div><label>વેલિડિટી દિવસો</label><input id="modalAgencyDays" type="number" value="30"></div>
+      <div><label>કુલ વેલિડિટી દિવસો</label><input id="modalAgencyDays" type="number" value="30"></div>
     </div>
     <div class="row">
       <div>
@@ -241,7 +241,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 </div>
 
 <div class="card">
-  <h3 id="lblCatalogTitle">📦 ડિજિટલ કેટલોગ (Flipkart Style)</h3>
+  <h3 id="lblCatalogTitle">📦 ડિજિટલ કેટલોગ</h3>
   <div id="orderProducts" class="catalog-grid"></div>
   <div class="summary">
     <div class="summary-row"><span id="lblSubtotal">સબ ટોટલ</span><span>₹ <span id="subtotal">0.00</span></span></div>
@@ -388,7 +388,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
       shopName: "દુકાનનું નામ",
       address: "સરનામું",
       locationBtn: "📍 Live Location મેળવો",
-      catalogTitle: "📦 ડિજિટલ કેટલોગ (Flipkart Style)",
+      catalogTitle: "📦 ડિજિટલ કેટલોગ",
       subtotal: "સબ ટોટલ",
       gst: "GST",
       grandTotal: "ફાઇનલ બિલ",
@@ -452,6 +452,16 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     document.getElementById("lblLogoutBtn").innerText = t.logoutBtn;
     document.getElementById("navOrderBtn").innerText = t.navOrder;
     document.getElementById("navAdminBtn").innerText = t.navAdmin;
+  }
+
+  function getRemainingDays(ag) {
+    if (!ag.createdDate) return Number(ag.days) || 30;
+    let createdTime = new Date(ag.createdDate).getTime();
+    let nowTime = new Date().getTime();
+    let diffDays = Math.floor((nowTime - createdTime) / (1000 * 60 * 60 * 24));
+    let totalAssigned = Number(ag.days) || 30;
+    let remaining = totalAssigned - diffDays;
+    return remaining > 0 ? remaining : 0;
   }
 
   function getFormattedDateTime(dateInput) {
@@ -533,13 +543,18 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     if(filtered.length === 0){ container.innerHTML = "કોઈ એજન્સી નથી મળી."; return; }
 
     filtered.forEach(ag => {
+      let remDays = getRemainingDays(ag);
       let limitText = ag.deviceLimit ? `ડિવાઈસ: ${ag.deviceLimit}` : `ડિવાઈસ: 3`;
       let langText = ag.language === 'en' ? 'English' : (ag.language === 'hi' ? 'Hindi' : 'Gujarati');
+      let statusHtml = remDays > 0 ? 
+        `<span style="background:#e8f5e9; color:#2e7d32; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">🟢 સક્રિય (${remDays} દિવસ | ${limitText} | ${langText})</span>` :
+        `<span style="background:#ffebee; color:#c62828; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">🔴 Expired (પૂરું થયું)</span>`;
+
       container.innerHTML += `
         <div style="background:#fff; border:1px solid #dce3ed; padding:10px; border-radius:8px; margin-bottom:8px;">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <b>${ag.name}</b>
-            <span style="background:#e8f5e9; color:#2e7d32; font-size:10px; padding:2px 6px; border-radius:4px; font-weight:bold;">🟢 સક્રિય (${ag.days || 30} દિવસ | ${limitText} | ${langText})</span>
+            ${statusHtml}
           </div>
           <div style="font-size:11px; color:#555; margin:4px 0;">
             🔑 ID: <code>${ag.clientId}</code> | Pass: <b>${ag.key || 'નથી'}</b><br>
@@ -601,7 +616,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
     if(!name || !clientId || !key){ alert("કૃપા કરીને નામ, ID અને પાસવર્ડ નાખો."); return; }
 
-    let agObj = { clientId, name, key, mobile, days, deviceLimit, language, address, passwordChangedOnce: true };
+    let existingAg = window.agencies.find(a => a.clientId === oldId);
+    let createdDate = existingAg && existingAg.createdDate ? existingAg.createdDate : new Date().toISOString();
+
+    let agObj = { clientId, name, key, mobile, days, deviceLimit, language, address, createdDate, passwordChangedOnce: true };
     await setDoc(doc(window.db, "global_system_agencies", clientId), agObj);
     if(oldId && oldId !== clientId){ await deleteDoc(doc(window.db, "global_system_agencies", oldId)); }
 
@@ -619,7 +637,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     await setDoc(doc(window.db, "global_system_agencies", clientId), ag);
     await window.loadAllAgenciesFromCloud();
     window.loadMasterAgencyList();
-    alert(`✅ દિવસો સફળતાપૂર્વક અપડેટ થયા! (હવે કુલ: ${ag.days} દિવસ)`);
+    alert(`✅ દિવસો સફળતાપૂર્વક અપડેટ થયા!`);
   }
 
   window.deleteAgency = async function(clientId){
@@ -644,6 +662,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     if(urlKey){
       let found = window.agencies.find(a => a.clientId === urlKey || a.key === urlKey);
       if(found){
+        if(getRemainingDays(found) <= 0){
+          alert("❌ આ એજન્સીની વેલિડિટી સમાપ્ત થઈ ગઈ છે!");
+          return;
+        }
         window.activeAgencyKey = found.clientId;
         window.currentAgencyData = found;
         document.getElementById("authScreen").classList.add("hidden");
@@ -659,6 +681,11 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     if(activeKey){
       let currentAg = window.agencies.find(a => a.clientId === activeKey);
       if(currentAg){
+        if(getRemainingDays(currentAg) <= 0){
+          alert("❌ આ એજન્સીની વેલિડિટી સમાપ્ત થઈ ગઈ છે!");
+          localStorage.removeItem("saas_active_key");
+          return;
+        }
         window.activeAgencyKey = currentAg.clientId;
         document.getElementById("authScreen").classList.add("hidden");
         document.getElementById("mainAppContainer").classList.remove("hidden");
@@ -674,6 +701,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let inputKey = document.getElementById("loginKeyInput").value.trim();
     let found = window.agencies.find(a => a.clientId === inputId && String(a.key || '').trim() === String(inputKey));
     if(found){
+      if(getRemainingDays(found) <= 0){
+        alert("❌ તમારી એજન્સીની વેલિડિટી સમાપ્ત (Expired) થઈ ગઈ છે. કૃપા કરીને રિન્યૂ કરો.");
+        return;
+      }
       localStorage.setItem("saas_active_key", found.clientId);
       window.activeAgencyKey = found.clientId;
       document.getElementById("authScreen").classList.add("hidden");
@@ -698,8 +729,10 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     window.currentAgencyData = agencyObj;
     let storeKey = agencyObj.clientId;
 
+    let remDays = getRemainingDays(agencyObj);
     document.getElementById("agencyTitle").innerText = agencyObj.name;
     document.getElementById("agencyPhoneHeader").innerText = "📞 " + agencyObj.mobile;
+    document.getElementById("agencyExpiryInfo").innerText = `${remDays} દિવસ બાકી`;
     document.getElementById("customerShareLink").value = window.location.href.split('?')[0] + "?agency=" + storeKey;
 
     const prodSnap = await getDocs(collection(window.db, `agency_${storeKey}_products`));
