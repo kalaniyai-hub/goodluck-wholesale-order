@@ -57,7 +57,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 .catalog-card img{width:100%;height:130px;object-fit:cover;border-radius:6px;cursor:pointer;background:#f8f9fa;}
 .catalog-info{margin-top:6px;}
 .catalog-info b{font-size:13px;display:block;margin-bottom:2px;color:#222;}
-.catalog-info .mrp-size{font-size:11px;color:#666;margin-bottom:4px;}
+.catalog-info .mrp-size{font-size:11px;color:#d9534f;font-weight:bold;margin-bottom:4px;}
 .catalog-card select,.catalog-card input{padding:5px;font-size:11px;margin-bottom:4px;}
 
 .product-admin{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px;background:#f8f9fa;border-radius:8px;margin-bottom:5px;border:1px solid #e2e8f0;}
@@ -264,7 +264,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
 <!-- PRODUCT FORM -->
 <div class="card">
-  <h3 id="productFormTitle">➕ નવી પ્રોડક્ટ ઉમેરો (મહત્તમ ૫ ફોટા)</h3>
+  <h3 id="productFormTitle">➕ નવી પ્રોડક્ટ ઉમેરો (સ્ટોક સાથે)</h3>
   <input type="hidden" id="editId">
   <label>વસ્તુનું નામ</label>
   <div style="display:flex;gap:4px;">
@@ -273,9 +273,11 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
   </div>
   <div class="row">
     <div><label>MRP</label><input id="prodMrp" placeholder="₹500"></div>
-    <div><label>સાઈઝ</label><input id="prodSize" placeholder="1 Pcs" lang="gu"></div>
-    <div><label>GST %</label><input id="prodGst" type="number" placeholder="0"></div>
+    <div><label>સાઈઝ</label><input id="prodSize" placeholder="૮ નંબર" lang="gu"></div>
+    <div><label>સ્ટોક નંગ</label><input id="prodStock" type="number" placeholder="20" value="20"></div>
   </div>
+  <label style="margin-top:4px;">GST %</label>
+  <input id="prodGst" type="number" placeholder="0">
 
   <label style="margin-top:6px;">📦 Packing / Units</label>
   <div style="display:grid;grid-template-columns:1.2fr 1fr .8fr 35px;gap:5px;font-size:11px;font-weight:bold;color:#666;margin-bottom:3px;"><span>નામ</span><span>ભાવ ₹</span><span>સંખ્યા</span><span></span></div>
@@ -845,6 +847,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let name = document.getElementById("prodName").value.trim();
     let mrp = document.getElementById("prodMrp").value.trim();
     let size = document.getElementById("prodSize").value.trim();
+    let stock = parseInt(document.getElementById("prodStock").value) || 0;
     let gst = parseFloat(document.getElementById("prodGst").value) || 0;
     if(!name){ alert("Product નું નામ નાખો."); return; }
 
@@ -863,7 +866,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
 
     let pObj = {
       id: editId ? Number(editId) : Date.now(),
-      name, mrp, size, gst, outOfStock,
+      name, mrp, size, stock, gst, outOfStock,
       images: window.currentEditingImages.length > 0 ? window.currentEditingImages : [""],
       packings
     };
@@ -893,6 +896,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     document.getElementById("prodName").value = "";
     document.getElementById("prodMrp").value = "";
     document.getElementById("prodSize").value = "";
+    document.getElementById("prodStock").value = "20";
     document.getElementById("prodGst").value = "";
     window.currentEditingImages = [];
     window.renderAdminImagePreviews();
@@ -910,6 +914,7 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     document.getElementById("prodName").value = p.name;
     document.getElementById("prodMrp").value = p.mrp;
     document.getElementById("prodSize").value = p.size;
+    document.getElementById("prodStock").value = p.stock !== undefined ? p.stock : 20;
     document.getElementById("prodGst").value = p.gst || 0;
     
     window.currentEditingImages = p.images ? [...p.images] : [p.image || ""];
@@ -938,13 +943,13 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     window.products.forEach(p=>{
       let firstImg = (p.images && p.images[0]) ? p.images[0] : "";
       let stockColor = p.outOfStock ? "#dc3545" : "#198754";
-      let stockText = p.outOfStock ? "🔴 Stock: બંધ" : "🟢 Stock: હાજર";
+      let stockText = p.outOfStock ? "🔴 Stock: બંધ" : `🟢 Stock: ${p.stock !== undefined ? p.stock : 20} નંગ`;
       box.innerHTML += `
         <div class="product-admin" style="${p.outOfStock?'opacity:0.6;background:#ffe6e6;':''}">
           ${firstImg?`<img src="${firstImg}">`:`<div style="width:40px;height:40px;background:#ddd;text-align:center;line-height:40px;">📦</div>`}
           <div class="admin-info">
             <b>${p.name}</b> ${p.outOfStock ? '<span style="color:red;font-size:10px;">(Stock નથી)</span>' : ''}<br>
-            <small>MRP ₹${p.mrp}</small>
+            <small>MRP ₹${p.mrp} | સાઈઝ: ${p.size || 'નથી'} | સ્ટોક: ${p.stock !== undefined ? p.stock : 20}</small>
           </div>
           <div class="admin-actions">
             <button class="btn" style="background:${stockColor};color:#fff;font-size:10px;padding:5px;" onclick="toggleStockStatus(${p.id})">${stockText}</button>
@@ -1003,17 +1008,23 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     let box = document.getElementById("orderProducts");
     box.innerHTML = "";
     window.products.forEach(p=>{
-      if(p.outOfStock) return;
+      if(p.outOfStock || (p.stock !== undefined && p.stock <= 0)) return;
       let firstImg = (p.images && p.images[0]) ? p.images[0] : "";
       let options = `<option value="">Packing પસંદ કરો</option>`;
       (p.packings || []).forEach((pk,i)=>{
         options += `<option value="${i}" data-price="${pk.price}">${pk.name} - ₹${pk.price}</option>`;
       });
+
+      let mrpDisplay = p.mrp ? `MRP: ₹${p.mrp}` : '';
+      let sizeDisplay = p.size ? `સાઈઝ: ${p.size}` : '';
+      let infoSeparator = (p.mrp && p.size) ? ' | ' : '';
+
       box.innerHTML += `
         <div class="catalog-card">
           ${firstImg?`<img src="${firstImg}" onclick='openGallery(${JSON.stringify(p.images)}, "${p.name}")'>`:`<div style="width:100%;height:130px;background:#ddd;display:flex;align-items:center;justify-content:center">📦</div>`}
           <div class="catalog-info">
             <b>${p.name}</b>
+            <div class="mrp-size">${mrpDisplay}${infoSeparator}${sizeDisplay}</div>
             <select class="packing-select" onchange="calculateBill()">${options}</select>
             <input class="qty" type="number" min="0" placeholder="જથ્થો" oninput="calculateBill()">
             <div style="text-align:right; font-weight:bold; color:#198754; font-size:12px;">₹ <span class="itemTotal">0.00</span></div>
@@ -1372,16 +1383,33 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     if(!shopName || !/^[0-9]{10}$/.test(mobile)){ alert("દુકાનનું નામ અને 10 આંકડાનો નંબર નાખો."); return; }
 
     let orderText = "", sub = 0;
-    document.querySelectorAll(".catalog-card").forEach(card=>{
+    let orderedItemsData = [];
+
+    let cards = document.querySelectorAll(".catalog-card");
+    for(let card of cards) {
       let sel = card.querySelector(".packing-select");
       let qty = parseFloat(card.querySelector(".qty").value) || 0;
       if(sel.value !== "" && qty > 0){
+        let prodName = card.querySelector("b").innerText;
         let price = parseFloat(sel.options[sel.selectedIndex].dataset.price);
         sub += price * qty;
-        orderText += `▪️ ${card.querySelector("b").innerText} - ${sel.options[sel.selectedIndex].text.split(" - ")[0]} × ${qty} = ₹${(price*qty).toFixed(2)}\n`;
+        orderText += `▪️ ${prodName} - ${sel.options[sel.selectedIndex].text.split(" - ")[0]} × ${qty} = ₹${(price*qty).toFixed(2)}\n`;
+
+        let prod = window.products.find(p => p.name === prodName);
+        if(prod){
+          prod.stock = (prod.stock !== undefined ? prod.stock : 20) - qty;
+          if(prod.stock < 0) prod.stock = 0;
+          orderedItemsData.push(prod);
+        }
       }
-    });
+    }
+
     if(sub <= 0){ alert("ઓછામાં ઓછું એક Product પસંદ કરો."); return; }
+
+    let storeKey = window.currentAgencyData.clientId;
+    for(let prod of orderedItemsData){
+      await setDoc(doc(window.db, `agency_${storeKey}_products`, String(prod.id)), prod);
+    }
 
     let mapLink = window.latitude ? `https://www.google.com/maps?q=${window.latitude},${window.windowLng}` : "નથી";
     let billNo = "GL-" + Math.floor(100000 + Math.random() * 900000);
@@ -1407,14 +1435,14 @@ input:focus,select:focus,textarea:focus{border-color:#0d6efd;}
     };
 
     window.ledger.push(rec);
-    let storeKey = window.currentAgencyData.clientId;
     await setDoc(doc(window.db, `agency_${storeKey}_ledger`, String(rec.id)), rec);
     window.loadLedger();
     window.loadCustomerDirectory();
+    window.loadOrderProducts();
 
     let msg = `🛒 *${window.currentAgencyData.name}*\n\n📄 *બિલ નંબર:* ${billNo}\n📅 *તારીખ:* ${dt.date} (${dt.day}), સમય: ${dt.time}\n🏪 *ગ્રાહક:* ${shopName}\n📞 *નંબર:* ${mobile}\n\n📦 *ઓર્ડર વિગત:*\n${orderText}\n💰 *ફાઇનલ બિલ: ₹${sub.toFixed(2)}*\n\nકૃપા કરીને ઓર્ડર કન્ફર્મ કરો.`;
     window.open(`https://wa.me/91${window.currentAgencyData.mobile}?text=` + encodeURIComponent(msg), "_blank");
-    alert("✅ ઓર્ડર સેવ થઈ ગયો અને WhatsApp પર મોકલવામાં આવ્યો!");
+    alert("✅ ઓર્ડર સેવ થઈ ગયો, સ્ટોક ઓટોમેટિક માઇનસ થઈ ગયો અને WhatsApp પર મોકલવામાં આવ્યો!");
   }
 
   window.copyCustomerLink = function(){
